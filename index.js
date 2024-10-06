@@ -27,6 +27,7 @@ async function run() {
 
     const courseCollection = client.db("courseDB").collection("course");
     const cartCollection = client.db("courseDB").collection("mycourse");
+    const enrollCollection = client.db("courseDB").collection("enrollcourse");
 
     //ADD DATA
     app.post("/course", async (req, res) => {
@@ -35,6 +36,7 @@ async function run() {
       // console.log(result);
       res.send(result);
     });
+   
 
     //GET DATA
     app.get("/course", async (req, res) => {
@@ -149,6 +151,67 @@ async function run() {
       const result = await cartCollection.find().toArray();
       res.send(result);
     });
+
+
+/**
+ * 
+ * Admin Data
+ * 
+ */
+
+ //ADD DATA
+ app.post("/enrollcourse", async (req, res) => {
+  try {
+      const course = req.body;
+      const result = await enrollCollection.insertOne(course);
+      res.status(201).send(result); 
+  } catch (error) {
+      console.error("Error inserting course:", error);
+      res.status(500).send({ message: "Internal server error" });
+  }
+});
+
+
+//Enroll data get
+app.get("/enrollcourse", async (req, res) => {
+  const result = await enrollCollection.find().toArray();
+  res.send(result);
+});
+
+
+// Endpoint to remove an enrollment
+app.delete("/enrollcourse/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+      const result = await enrollCollection.deleteOne({ _id: new ObjectId(id) });
+      if (result.deletedCount === 0) {
+          return res.status(404).send({ message: "Enrollment not found" });
+      }
+      res.send({ message: "Enrollment removed successfully" });
+  } catch (error) {
+      console.error("Error removing enrollment:", error);
+      res.status(500).send({ message: "Internal server error" });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
